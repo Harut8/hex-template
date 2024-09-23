@@ -1,5 +1,3 @@
-import logging
-
 from dependency_injector import containers, providers
 from faststream.rabbit import RabbitBroker
 from faststream.rabbit.fastapi import RabbitRouter
@@ -10,19 +8,15 @@ from src.adapters.spi.logger import LOGGER
 from src.adapters.spi.rmq_publisher import RabbitMQPublisher
 
 
-
 class DependencyContainer(containers.DeclarativeContainer):
     config = providers.Configuration()
 
-    wiring_config = containers.WiringConfiguration(
-        modules=[
-        ]
-    )
+    wiring_config = containers.WiringConfiguration(modules=[])
     pg_db: providers.Singleton = providers.Singleton(
         PgAsyncSQLAlchemyAdapter,
         url=config.DATABASE.SQLALCHEMY_DATABASE_URI,
         echo=config.DATABASE.DEBUG,
-        logger=LOGGER
+        logger=LOGGER,
     )
     rmq_broker: RabbitBroker = providers.Singleton(
         RabbitBroker,
@@ -37,7 +31,5 @@ class DependencyContainer(containers.DeclarativeContainer):
         broker_adapter=rmq_broker,
     )
     user_rmq_consumer: RabbitMQUserConsumer = providers.Factory(
-        RabbitMQUserConsumer,
-        broker_adapter=rmq_router,
-        logger=LOGGER
+        RabbitMQUserConsumer, broker_adapter=rmq_router, logger=LOGGER
     )
